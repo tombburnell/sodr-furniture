@@ -1,6 +1,16 @@
 import fs from 'fs';
 import path from 'path';
 
+export interface FurnitureRecommendation {
+    furniture: FurnitureItem;
+    reason: string;
+}
+
+export interface LlmRecommendation {
+    furniture_id: string;
+    reason: string;
+}
+
 export interface FurnitureItem {
   id: string;
   name: string;

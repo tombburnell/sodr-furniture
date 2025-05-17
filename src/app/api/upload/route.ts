@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import openai from 'openai';
-import { FurnitureItem, loadFurnitureData } from '@/app/utils/furniture';
+import { FurnitureItem, FurnitureRecommendation, LlmRecommendation, loadFurnitureData } from '@/app/utils/furniture';
 import YAML from 'yaml';
 
 export async function POST(request: Request) {
@@ -44,6 +44,7 @@ export async function POST(request: Request) {
     const furnitureData = loadFurnitureData();
     
     // - furniture (list of urls from the FURNITURE_DATA below that could match the description, style, size and colours)
+    // - furniture_ids (array of at least 10 ids from the FURNITURE_DATA below for items of furniture that best match the room, description, style, size and colours. Don't select matresses for gardens or vanity units for kitchens etc.)
     const prompt = 
                 `Analyze this image and provide a JSON response with keys
                 - description (a description of the room)
@@ -51,8 +52,19 @@ export async function POST(request: Request) {
                 - style (era, mood, style, design etc)
                 - size (small, medium, large)
                 - colours (list of key colours, try to be specific)                
-                - furniture_ids (array of at least 10 ids from the FURNITURE_DATA below for items of furniture that best match the room, description, style, size and colours. Don't select matresses for gardens or vanity units for kitchens etc.)
-
+                
+                - recommended_furniture (array of at least 10 furniture items that would suit the room)
+                    - ensure the furniture is suitable for the room type and style - eg no dining tables in bedrooms or mattresses in bedrooms.
+                    - don't consider mixed use rooms like kitchen diners or studios
+                    - pick up subtle clues from image and description to make a good recommendation 
+                    - Modern is overused so downplay it.
+                        - eg a "modern" kitchen with a rustic feel should not show modern furniture because it doesn't fit the style.                         
+                    - out must be of the format
+                        [ { 
+                            "furniture_id": "123",
+                            "reason": "This bed would suit this room because it's a bedroom and the style suggests a classic look",
+                        }]       
+                    - order by most suitable first.
 
                 FURNITURE_DATA: 
                 ${YAML.stringify(furnitureData)}
@@ -83,20 +95,38 @@ export async function POST(request: Request) {
     const content = response.choices?.[0]?.message?.content || '{}';
     const analysis = JSON.parse(content);
 
-    const furnitureIds = analysis.furniture_ids;
+    const recommendedFurniture = analysis.recommended_furniture;
 
-    console.log("furnitureData:", furnitureData);
+    console.log("recommendedFurniture:", recommendedFurniture);
+
+    const furniture: FurnitureRecommendation[] = recommendedFurniture.map((recommendation: LlmRecommendation) => {
+        const fItem = furnitureData.find((furnitureItem: FurnitureItem) => {
+          return furnitureItem.id === recommendation.furniture_id
+        });
+  
+        if (!fItem) {
+          console.log(`Furniture item not found for id: ${recommendation.furniture_id}`);
+          return null; 
+        }
+        return {
+            furniture: fItem,
+            reason: recommendation.reason
+        }
+      }).filter((item: FurnitureRecommendation | null | undefined): item is FurnitureRecommendation => item !== null && item !== undefined);
+    // const furnitureIds = analysis.furniture_ids;
+
+    // console.log("furnitureData:", furnitureData);
     
-    const furniture = furnitureIds.map((id: string) => {
-      const fItem = furnitureData.find((furnitureItem: FurnitureItem) => {
-        return furnitureItem.id === id
-      });
+    // const furniture = furnitureIds.map((id: string) => {
+    //   const fItem = furnitureData.find((furnitureItem: FurnitureItem) => {
+    //     return furnitureItem.id === id
+    //   });
 
-      if (!fItem) {
-        console.log(`Furniture item not found for id: ${id}`);
-      }
-      return fItem;
-    }).filter((item: FurnitureItem | undefined): item is FurnitureItem => item !== undefined);
+    //   if (!fItem) {
+    //     console.log(`Furniture item not found for id: ${id}`);
+    //   }
+    //   return fItem;
+    // }).filter((item: FurnitureItem | undefined): item is FurnitureItem => item !== undefined);
 
     console.log("Furniture", furniture);
 

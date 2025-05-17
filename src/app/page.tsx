@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FurnitureItem } from "./utils/furniture";
+import { FurnitureItem, FurnitureRecommendation } from "./utils/furniture";
 
 interface Analysis {
   description: string;
@@ -15,7 +15,7 @@ interface Analysis {
 export default function Home() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
-  const [furniture, setFurniture] = useState<FurnitureItem[]>([]);
+  const [furniture, setFurniture] = useState<FurnitureRecommendation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,7 +53,7 @@ export default function Home() {
       <div className="bg-gray-100 p-8">
         <div className="flex items-center gap-4">
           <label className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer">
-            Upload your image
+            Upload image of your room
             <input 
               type="file" 
               accept="image/*" 
@@ -108,7 +108,12 @@ export default function Home() {
         </div>
 
         <div className="flex flex-col flex-grow shrink-0 w-1/2 gap-4 p-4">
-          {furniture?.map((furnitureItem: FurnitureItem) => (
+        {furniture && <div className="">Suggested furniture</div>}
+          {furniture?.map((recommendation) => {
+            const furnitureItem: FurnitureItem = recommendation.furniture;
+
+            return (
+
             <div key={furnitureItem.id}>
               <div className="flex flex-col gap-4">
                 <img 
@@ -119,11 +124,13 @@ export default function Home() {
                 />
                 <div className="flex flex-col">
                   <div className="font-bold">{furnitureItem.name} (£{furnitureItem.price})</div>
-                  <div>{furnitureItem.description}</div>
+                  <div className="italic">{recommendation.reason}</div>
+                  <div className="mt-1 text-sm">{furnitureItem.description}</div>
+                  
                 </div>
               </div>
             </div>
-          ))}
+          )})}
           {furniture.length > 0 && (
             <pre className="text-white mt-4 p-4 bg-gray-800 rounded overflow-auto whitespace-pre-wrap text-xs">
               {JSON.stringify(furniture, null, 2)}
