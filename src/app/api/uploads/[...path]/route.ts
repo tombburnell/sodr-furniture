@@ -10,10 +10,11 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
 
     console.log("url", url);
-    
-    const path = url.pathname.replace(/^\/api\/uploads\//, '');
+
+    const path = decodeURIComponent(url.pathname.replace(/^\/api\/uploads\//, ''));
     const filePath = join(process.env.UPLOAD_PATH!, path);
 
+    console.log("looking for filePath", filePath, process.cwd());
     // Check if file exists and is accessible
     try {
       await stat(filePath);

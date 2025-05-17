@@ -53,7 +53,7 @@ export async function POST(request: Request) {
                 - size (small, medium, large)
                 - colours (list of key colours, try to be specific)                
                 
-                - recommended_furniture (array of at least 10 furniture items that would suit the room)
+                - recommended_furniture (array of furniture items that would suit the room, ideally 10-15 but dont include inappropriate items)
                     - ensure the furniture is suitable for the room type and style - eg no dining tables in bedrooms or mattresses in bedrooms.
                     - don't consider mixed use rooms like kitchen diners or studios
                     - pick up subtle clues from image and description to make a good recommendation 
