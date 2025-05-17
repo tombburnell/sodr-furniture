@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for sodr-furniture-a on 2025-05-17T11:48:44+01:00
+# fly.toml app configuration file generated for sodr-furniture-a on 2025-05-17T12:13:22+01:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -7,10 +7,6 @@ app = 'sodr-furniture-a'
 primary_region = 'lhr'
 
 [build]
-  dockerfile = "Dockerfile"
-
-[env]
-  PORT = "3000"
 
 [http_service]
   internal_port = 3000
@@ -27,4 +23,4 @@ primary_region = 'lhr'
 
 [mounts]
   source = "uploads"
-  destination = "/app/public/uploads"
+  destination = "/data"

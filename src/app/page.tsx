@@ -77,10 +77,7 @@ export default function Home() {
               <img 
                 src={uploadedImage} 
                 alt="Uploaded image" 
-                // width={500} 
-                // height={500}
                 style={{ objectFit: 'contain' }}
-                // unoptimized
               />
             </div>
           ) : (
@@ -89,7 +86,6 @@ export default function Home() {
 
           {analysis && (
             <div className="flex flex-col gap-4">
-
               <div className="mt-4 p-4 flex flex-col bg-gray-800 rounded gap-4 ">
                 <div className="">{analysis.description}</div>
                 <div><span className="font-bold">type:</span> {analysis.type}</div>
@@ -104,40 +100,35 @@ export default function Home() {
                   </ul>
                 </div>
               </div>
-              {/* <div className="font-bold">{analysis.furniture_ids}</div> */}
-            <pre className="text-white mt-4 p-4 bg-gray-800 rounded overflow-auto whitespace-pre-wrap text-xs">
-            
-
-              {JSON.stringify(analysis, null, 2)}
-            </pre>
+              <pre className="text-white mt-4 p-4 bg-gray-800 rounded overflow-auto whitespace-pre-wrap text-xs">
+                {JSON.stringify(analysis, null, 2)}
+              </pre>
             </div>
           )}
         </div>
 
         <div className="flex flex-col flex-grow shrink-0 w-1/2 gap-4 p-4">
-                  
           {furniture?.map((furnitureItem: FurnitureItem) => (
             <div key={furnitureItem.id}>
               <div className="flex flex-col gap-4">
-                {/* test: {furnitureItem.image_path} */}
-                <img src={furnitureItem.image_path} alt={furnitureItem.name} 
-                style={{ objectFit: 'contain' }}
-                className="max-w-full max-h-[300px]"
+                <img 
+                  src={furnitureItem.image_path} 
+                  alt={furnitureItem.name} 
+                  style={{ objectFit: 'contain' }}
+                  className="max-w-full max-h-[300px]"
                 />
                 <div className="flex flex-col">
                   <div className="font-bold">{furnitureItem.name} (£{furnitureItem.price})</div>
                   <div>{furnitureItem.description}</div>
-
-                
                 </div>
               </div>
             </div>
           ))}
-        {furniture.length > 0 && (
-          <pre className="text-white mt-4 p-4 bg-gray-800 rounded overflow-auto whitespace-pre-wrap text-xs">
-            {JSON.stringify(furniture, null, 2)}
-          </pre>
-        )}
+          {furniture.length > 0 && (
+            <pre className="text-white mt-4 p-4 bg-gray-800 rounded overflow-auto whitespace-pre-wrap text-xs">
+              {JSON.stringify(furniture, null, 2)}
+            </pre>
+          )}
         </div>  
       </div>
     </div>

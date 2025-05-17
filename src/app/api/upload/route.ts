@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import openai from 'openai';
 import { FurnitureItem, loadFurnitureData } from '@/app/utils/furniture';
@@ -17,17 +17,19 @@ export async function POST(request: Request) {
       );
     }
 
+    // Ensure uploads directory exists
+    await mkdir(process.env.UPLOAD_PATH!, { recursive: true });
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
     // Create a unique filename
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
     const filename = `${uniqueSuffix}-${file.name}`;
-    const path = join(process.cwd(), 'public/uploads', filename);
+    const path = join(process.env.UPLOAD_PATH!, filename);
 
     // Save the file
     await writeFile(path, buffer);
-
 
     // Call OpenAI Vision API
     console.log(process.env.OPENAI_API_KEY);
@@ -49,7 +51,8 @@ export async function POST(request: Request) {
                 - style (era, mood, style, design etc)
                 - size (small, medium, large)
                 - colours (list of key colours, try to be specific)                
-                - furniture_ids (array of at least 10 ids from the FURNITURE_DATA below that best match the description, style, size and colours)
+                - furniture_ids (array of at least 10 ids from the FURNITURE_DATA below for items of furniture that best match the room, description, style, size and colours. Don't select matresses for gardens or vanity units for kitchens etc.)
+
 
                 FURNITURE_DATA: 
                 ${YAML.stringify(furnitureData)}
@@ -77,9 +80,6 @@ export async function POST(request: Request) {
       response_format: { type: "json_object" }
     });
 
-    console.log("Response", response);
-    console.log("Response.choices[0].message.content", response.choices?.[0]?.message?.content);
-
     const content = response.choices?.[0]?.message?.content || '{}';
     const analysis = JSON.parse(content);
 
@@ -89,7 +89,6 @@ export async function POST(request: Request) {
     
     const furniture = furnitureIds.map((id: string) => {
       const fItem = furnitureData.find((furnitureItem: FurnitureItem) => {
-        // console.log("furnitureItem", furnitureItem);
         return furnitureItem.id === id
       });
 
@@ -101,21 +100,13 @@ export async function POST(request: Request) {
 
     console.log("Furniture", furniture);
 
-    // const analysis = JSON.parse(response.choices?.[0]?.message?.content || "{}")
-    // Extract the analysis from the response
-    // const analysis = {
-    // description: response.choices[0].message.content.match(/"description":\s*"([^"]+)"/)?.[1] || "",
-    // style: response.choices[0].message.content.match(/"style":\s*"([^"]+)"/)?.[1] || "",
-    // colour: response.choices[0].message.content.match(/"colour":\s*"([^"]+)"/)?.[1] || ""
-    // };
-
     // Save the analysis to a JSON file
-    const jsonPath = join(process.cwd(), 'public/uploads', `${filename}.json`);
+    const jsonPath = join(process.env.UPLOAD_PATH!, `${filename}.json`);
     await writeFile(jsonPath, JSON.stringify(analysis, null, 2));
 
     // Return the URL of the uploaded file
     return NextResponse.json({ 
-      imageUrl: `/uploads/${filename}`,
+      imageUrl: `/api/uploads/${filename}`,
       analysis: analysis,
       furniture: furniture
     });
