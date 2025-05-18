@@ -43,9 +43,7 @@ export async function POST(request: Request) {
 
     const furnitureData = loadFurnitureData();
     
-    // - furniture (list of urls from the FURNITURE_DATA below that could match the description, style, size and colours)
-    // - furniture_ids (array of at least 10 ids from the FURNITURE_DATA below for items of furniture that best match the room, description, style, size and colours. Don't select matresses for gardens or vanity units for kitchens etc.)
-    const prompt = 
+    const prompt =
                 `Analyze this image and provide a JSON response with keys
                 - description (a description of the room)
                 - type (the type of room, eg kitchen, living room, bedroom, etc)            
@@ -113,22 +111,8 @@ export async function POST(request: Request) {
             reason: recommendation.reason
         }
       }).filter((item: FurnitureRecommendation | null | undefined): item is FurnitureRecommendation => item !== null && item !== undefined);
-    // const furnitureIds = analysis.furniture_ids;
 
-    // console.log("furnitureData:", furnitureData);
-    
-    // const furniture = furnitureIds.map((id: string) => {
-    //   const fItem = furnitureData.find((furnitureItem: FurnitureItem) => {
-    //     return furnitureItem.id === id
-    //   });
-
-    //   if (!fItem) {
-    //     console.log(`Furniture item not found for id: ${id}`);
-    //   }
-    //   return fItem;
-    // }).filter((item: FurnitureItem | undefined): item is FurnitureItem => item !== undefined);
-
-    console.log("Furniture", furniture);
+    // console.log("Furniture", furniture);
 
     // Save the analysis to a JSON file
     const jsonPath = join(process.env.UPLOAD_PATH!, `${filename}.json`);
